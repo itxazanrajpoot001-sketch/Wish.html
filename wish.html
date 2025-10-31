@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Fun Birthday Wish</title>
+<style>
+  :root{
+    --bg:#0f172a; --card:#0b1220; --accent:#ffb86b; --text:#eef2ff;
+  }
+  body{margin:0;font-family:Inter, system-ui, sans-serif;background:linear-gradient(135deg,#071028,#0f172a);color:var(--text);display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;}
+  .app{width:100%;max-width:900px;background:rgba(255,255,255,0.03);border-radius:14px;padding:20px;box-shadow:0 8px 30px rgba(2,6,23,0.7);}
+  h1{margin:0 0 14px;font-size:22px;}
+  .controls{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px;}
+  .controls > *{flex:1 1 180px;}
+  label{display:block;font-size:12px;margin-bottom:6px;opacity:0.9}
+  input[type=text], select, textarea{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);color:var(--text);}
+  button{padding:10px 14px;border-radius:10px;border:0;background:var(--accent);color:#111;font-weight:600;cursor:pointer;}
+  .cardWrap{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;}
+  .card{flex:1 1 320px;background:linear-gradient(180deg,var(--card),rgba(255,255,255,0.02));border-radius:12px;padding:18px;min-height:220px;position:relative;overflow:hidden;}
+  .greeting{font-size:20px;font-weight:700;margin-bottom:6px;}
+  .name{font-size:30px;font-weight:800;color:var(--accent);letter-spacing:0.5px;}
+  .message{margin-top:8px;line-height:1.4;opacity:0.95}
+  .confetti{position:absolute;inset:0;pointer-events:none}
+  /* simple confetti pieces */
+  .confetti span{position:absolute;width:8px;height:14px;border-radius:2px;opacity:0.9;transform:translateY(-20px) rotate(20deg);animation:fall 1600ms linear infinite;}
+  @keyframes fall{0%{transform:translateY(-40px) rotate(0deg);opacity:1}100%{transform:translateY(260px) rotate(360deg);opacity:0}}
+  .small{font-size:12px;opacity:0.8;margin-top:10px}
+  .row{display:flex;gap:8px;align-items:center}
+</style>
+</head>
+<body>
+  <div class="app">
+    <h1>Make a Birthday Wish 🎉</h1>
+    <div class="controls">
+      <div>
+        <label>Recipient Name</label>
+        <input id="name" type="text" placeholder="e.g. Ali" />
+      </div>
+      <div>
+        <label>Pick Theme</label>
+        <select id="theme">
+          <option value="classic">Classic (gold)</option>
+          <option value="pink">Pink Party</option>
+          <option value="neon">Neon</option>
+        </select>
+      </div>
+      <div>
+        <label>Message (short)</label>
+        <input id="msg" type="text" placeholder="Happy Birthday! Wish you joy..." />
+      </div>
+      <div>
+        <label>Show Confetti?</label>
+        <select id="confetti">
+          <option value="yes">Yes</option><option value="no">No</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row" style="margin-bottom:12px;gap:10px">
+      <button id="generate">Generate Wish</button>
+      <button id="download">Download Image</button>
+      <div style="flex:1"></div>
+      <div class="small">Tip: Use "Download" to save the card as PNG.</div>
+    </div>
+
+    <div class="cardWrap">
+      <div class="card" id="cardPreview">
+        <div class="greeting">Happy Birthday, <span class="name" id="cardName">Friend</span>!</div>
+        <div class="message" id="cardMsg">Have an amazing day filled with joy and surprises.</div>
+        <div class="small" id="cardFrom">— From your friend</div>
+        <div class="confetti" id="confettiLayer"></div>
+      </div>
+
+      <div style="flex: 0 0 220px;">
+        <div style="background:rgba(255,255,255,0.02);padding:12px;border-radius:10px;">
+          <strong>Preview Options</strong>
+          <p class="small">Customize and press Generate.</p>
+          <div style="margin-top:8px">
+            <label>Share Link (copy)</label>
+            <input id="shareLink" readonly placeholder="Generated after Generate" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+const nameInput=document.getElementById('name'), msgInput=document.getElementById('msg');
+const themeSel=document.getElementById('theme'), confSel=document.getElementById('confetti');
+const cardName=document.getElementById('cardName'), cardMsg=document.getElementById('cardMsg');
+const cardPreview=document.getElementById('cardPreview'), confettiLayer=document.getElementById('confettiLayer');
+const shareLink=document.getElementById('shareLink');
+
+function applyTheme(t){
+  if(t==='classic'){document.documentElement.style.setProperty('--accent','#ffb86b');}
+  else if(t==='pink'){document.documentElement.style.setProperty('--accent','#ff6fa3');}
+  else if(t==='neon'){document.documentElement.style.setProperty('--accent','#39ff14');}
+}
+
+function makeConfetti(){
+  confettiLayer.innerHTML='';
+  for(let i=0;i<18;i++){
+    const sp=document.createElement('span');
+    sp.style.left = Math.random()*100+'%';
+    sp.style.top = Math.random()*40+'%';
+    sp.style.background = ['#ffcc66','#ff6fa3','#6fc4ff','#8bff8b'][Math.floor(Math.random()*4)];
+    sp.style.animationDuration = 1200 + Math.random()*1200 + 'ms';
+    sp.style.transform = 'rotate('+Math.random()*360+'deg)';
+    confettiLayer.appendChild(sp);
+  }
+}
+
+document.getElementById('generate').addEventListener('click', ()=>{
+  const n = nameInput.value.trim() || 'Friend';
+  const m = msgInput.value.trim() || 'Have an amazing day filled with joy and surprises.';
+  applyTheme(themeSel.value);
+  cardName.textContent = n;
+  cardMsg.textContent = m;
+  if(confSel.value==='yes'){ makeConfetti(); confettiLayer.style.display='block'; } else { confettiLayer.innerHTML=''; confettiLayer.style.display='none'; }
+  // create a simple share link using URL params (works when hosted)
+  const params = new URLSearchParams({name:n, msg:m, theme:themeSel.value, conf:confSel.value});
+  shareLink.value = location.origin + location.pathname + '?' + params.toString();
+  // update URL without reloading
+  history.replaceState(null,'', '?'+params.toString());
+});
+
+// Load from URL params (so shared link shows same card)
+function loadFromParams(){
+  const p = new URLSearchParams(location.search);
+  if(p.has('name')) nameInput.value = p.get('name');
+  if(p.has('msg')) msgInput.value = p.get('msg');
+  if(p.has('theme')) themeSel.value = p.get('theme');
+  if(p.has('conf')) confSel.value = p.get('conf');
+  // auto generate preview
+  if(p.has('name')||p.has('msg')) document.getElementById('generate').click();
+}
+loadFromParams();
+
+// Simple "download" using html2canvas approach would require library; we'll create a basic SVG snapshot alternative:
+document.getElementById('download').addEventListener('click', async ()=>{
+  // create canvas from card element using SVG foreignObject
+  const el = cardPreview;
+  const width = el.offsetWidth, height = el.offsetHeight;
+  const data = `
+    <svg xmlns='http://www.w3.org/2000/svg' width='${width}' height='${height}'>
+      <foreignObject width='100%' height='100%'>
+        ${new XMLSerializer().serializeToString(el)}
+      </foreignObject>
+    </svg>`;
+  const blob = new Blob([data], {type:'image/svg+xml;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download='wish.svg'; document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+});
+</script>
+</body>
+</html>
